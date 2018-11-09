@@ -1,10 +1,14 @@
+# This Makefile requires the following commands to be available:
+# * virtualenv
+# * python2
+
 DEPS:=requirements/requirements-base.txt
 VIRTUALENV=$(shell which virtualenv)
 PIP:="venv/bin/pip"
 CMD_FROM_VENV:=". venv/bin/activate; which"
 PYTHON=$(shell "$(CMD_FROM_VENV)" "python2.7")
 
-.PHONY: venv run requirements
+.PHONY: venv run requirements pyclean clean pipclean
 
 default: run/prod;
 
@@ -14,26 +18,41 @@ venv:
 	$(PIP) install -U "pip>=18.0" -q
 	$(PIP) install -r $(DEPS)
 
-run/qa:
+_make_venv_if_empty:
+	@[ -e ./venv/bin/python ] || make venv
+
+run/qa: _make_venv_if_empty
 	$(PYTHON) websearch_monitor.py qa
 
-run/prod:
+run/prod: _make_venv_if_empty
 	$(PYTHON) websearch_monitor.py prod
 
 
 ## Utilities for the venv currently active.
 
-requirements:
-	pip install -U -r requirements.txt
+_ensure_active_env:
+ifndef VIRTUAL_ENV
+	@echo 'Error: no virtual environment active'
+	@exit 1
+endif
+
+requirements: _ensure_active_env
+	pip install -U -r $(DEPS)
 
 
 ## Generic utilities.
 
 pyclean:
 	find . -name *.pyc -delete
+	rm -rf *.egg-info build
+	rm -rf coverage.xml .coverage
+	rm -rf .pytest_cache
 
 clean: pyclean
 	rm -rf venv
+	rm -rf .tox
+	rm -rf dist
 
-cleanpipcache:
+pipclean:
 	rm -rf ~/Library/Caches/pip
+	rm -rf ~/.cache/pip
