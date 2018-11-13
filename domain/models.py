@@ -17,7 +17,7 @@ class Monitor(object):
     def __init__(self, env):
         self.base_url = BASE_URL[env]
 
-    def _get_request_feactory(self, url_path, name=None):
+    def _get_request_factory(self, url_path, name=None):
         url = '{}/{}'.format(self.base_url, url_path)
         if not name:
             name = url_path
@@ -37,14 +37,14 @@ class Monitor(object):
         $ curl https://labs.inspirehep.net/health
         "Thu, 08 Nov 2018 12:14:19 GMT"
         """
-        return self._get_request_feactory('health')
+        return self._get_request_factory('health')
 
     def get_health_celery(self):
         """
         $ curl https://labs.inspirehep.net/healthcelery
         "Thu, 08 Nov 2018 12:14:44 GMT"
         """
-        return self._get_request_feactory('healthcelery')
+        return self._get_request_factory('healthcelery')
 
     def get_search(self):
         """
@@ -68,7 +68,7 @@ class Monitor(object):
             ...
         }
         """
-        return self._get_request_feactory('api/literature/20')
+        return self._get_request_factory('api/literature/20')
 
     def _write_metric(self, name='default', **kwargs):
         data = dict(
