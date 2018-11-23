@@ -1,6 +1,8 @@
-import requests
 import socket
 import traceback
+
+import click
+import requests
 
 from time_execution.decorator import write_metric
 
@@ -31,7 +33,7 @@ class Monitor(object):
             http_status_code=status_code,
             name=name,
         )
-        print('Response: {}'.format(status_code))
+        click.echo('Response: {}'.format(status_code))
         return status_code
 
     def get_health(self):

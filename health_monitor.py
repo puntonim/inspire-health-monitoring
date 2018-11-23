@@ -78,5 +78,5 @@ def perform_monitoring(env):
 
 
 if __name__ == '__main__':
-    print('** INSPIRE HEALTH MONITOR **')
+    click.echo('** INSPIRE HEALTH MONITOR **')
     cli()
