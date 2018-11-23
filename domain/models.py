@@ -19,6 +19,7 @@ class Monitor(object):
 
     def _get_request_factory(self, url_path, name=None):
         url = '{}/{}'.format(self.base_url, url_path)
+        print('GET {}'.format(url))
         if not name:
             name = url_path
         try:
@@ -30,6 +31,7 @@ class Monitor(object):
             http_status_code=status_code,
             name=name,
         )
+        print('Response: {}'.format(status_code))
         return status_code
 
     def get_health(self):

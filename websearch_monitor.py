@@ -74,12 +74,7 @@ if __name__ == '__main__':
     monitor = Monitor(env)
 
     result = monitor.get_health()
-    print('GET /health: {}'.format(result))
-
     result = monitor.get_search()
-    print('GET /api/literature/20: {}'.format(result))
-
     result = monitor.get_health_celery()
-    print('GET /healthcelery: {}'.format(result))
 
     print('**END**')
