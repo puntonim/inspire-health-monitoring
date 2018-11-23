@@ -1,7 +1,9 @@
 import os
 import sys
-import time_execution
 import warnings
+
+import click
+import time_execution
 
 from time_execution.backends.elasticsearch import ElasticsearchBackend
 
@@ -48,33 +50,33 @@ def configure(env):
     )
 
 
-def get_env_from_argv(argv):
-    try:
-        env = sys.argv[1]
-    except IndexError:
-        print('Error: environment missing\n')
-        print('Usage: {} qa|prod'.format(
-            sys.argv[0]
-        ))
-        sys.exit(1)
-    if not env.lower() in ('qa', 'prod'):
-        print('Error: unknown environment\n')
-        print('Usage: {} qa|prod'.format(
-            sys.argv[0]
-        ))
-        sys.exit(1)
-    return env
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+def prod():
+    perform_monitoring('prod')
+
+
+@click.command()
+def qa():
+    perform_monitoring('qa')
+
+
+cli.add_command(prod)
+cli.add_command(qa)
+
+
+def perform_monitoring(env):
+    configure(env)
+    monitor = Monitor(env)
+    monitor.get_health()
+    monitor.get_search()
+    monitor.get_health_celery()
 
 
 if __name__ == '__main__':
-    env = get_env_from_argv(sys.argv)
-
-    configure(env)
-    print('** WEBSEARCH MONITOR ENV={} **'.format(env))
-    monitor = Monitor(env)
-
-    result = monitor.get_health()
-    result = monitor.get_search()
-    result = monitor.get_health_celery()
-
-    print('**END**')
+    print('** INSPIRE HEALTH MONITOR **')
+    cli()

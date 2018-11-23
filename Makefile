@@ -8,9 +8,9 @@ PIP:="venv/bin/pip"
 CMD_FROM_VENV:=". venv/bin/activate; which"
 PYTHON=$(shell "$(CMD_FROM_VENV)" "python2.7")
 
-.PHONY: venv run requirements pyclean clean pipclean
+.PHONY: venv qa prod requirements pyclean clean pipclean
 
-default: run/prod;
+default: qa;
 
 venv:
 	$(VIRTUALENV) -p $(shell which python2.7) venv
@@ -21,11 +21,11 @@ venv:
 _make_venv_if_empty:
 	@[ -e ./venv/bin/python ] || make venv
 
-run/qa: _make_venv_if_empty
-	$(PYTHON) websearch_monitor.py qa
+qa: _make_venv_if_empty
+	$(PYTHON) health_monitor.py qa
 
-run/prod: _make_venv_if_empty
-	$(PYTHON) websearch_monitor.py prod
+prod: _make_venv_if_empty
+	$(PYTHON) health_monitor.py prod
 
 
 ## Utilities for the venv currently active.
