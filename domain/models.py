@@ -19,36 +19,43 @@ class Monitor(object):
     def __init__(self, env):
         self.base_url = BASE_URL[env]
 
-    def _get_request_factory(self, url_path, name=None):
+    def _get_request_factory(self, url_path):
         url = '{}/{}'.format(self.base_url, url_path)
-        print('GET {}'.format(url))
-        if not name:
-            name = url_path
+        click.echo('GET {}'.format(url))
         try:
             response = requests.get(url, timeout=30)
         except Exception:
+            response = None
             traceback.print_exc()
-        status_code = getattr(response, 'status_code')
-        self._write_metric(
-            http_status_code=status_code,
-            name=name,
-        )
-        click.echo('Response: {}'.format(status_code))
-        return status_code
+        return response
 
     def get_health(self):
         """
         $ curl https://labs.inspirehep.net/health
         "Thu, 08 Nov 2018 12:14:19 GMT"
         """
-        return self._get_request_factory('health')
+        response = self._get_request_factory('health')
+        status_code = getattr(response, 'status_code')
+        self._write_metric(
+            http_status_code=status_code,
+            name='health',
+        )
+        click.echo('Response: {}'.format(status_code))
+        return response
 
     def get_health_celery(self):
         """
         $ curl https://labs.inspirehep.net/healthcelery
         "Thu, 08 Nov 2018 12:14:44 GMT"
         """
-        return self._get_request_factory('healthcelery')
+        response = self._get_request_factory('healthcelery')
+        status_code = getattr(response, 'status_code')
+        self._write_metric(
+            http_status_code=status_code,
+            name='healthcelery',
+        )
+        click.echo('Response: {}'.format(status_code))
+        return response
 
     def get_search(self):
         """
@@ -72,7 +79,17 @@ class Monitor(object):
             ...
         }
         """
-        return self._get_request_factory('api/literature/20')
+        pid_value = 20
+        response = self._get_request_factory('api/literature/{}'.format(pid_value))
+        assert response.json()['metadata']['control_number'] == pid_value
+
+        status_code = getattr(response, 'status_code')
+        self._write_metric(
+            http_status_code=status_code,
+            name='healthcelery',
+        )
+        click.echo('Response: {}'.format(status_code))
+        return response
 
     def _write_metric(self, name='default', **kwargs):
         data = dict(
