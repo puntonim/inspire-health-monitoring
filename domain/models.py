@@ -34,12 +34,10 @@ class Monitor(object):
         $ curl https://labs.inspirehep.net/health
         "Thu, 08 Nov 2018 12:14:19 GMT"
         """
-        response = self._get_request_factory('health')
+        name = 'health'
+        response = self._get_request_factory(name)
         status_code = getattr(response, 'status_code')
-        self._write_metric(
-            http_status_code=status_code,
-            name='health',
-        )
+        self._write_metric(http_status_code=status_code, name=name)
         click.echo('Response: {}'.format(status_code))
         return response
 
@@ -48,12 +46,10 @@ class Monitor(object):
         $ curl https://labs.inspirehep.net/healthcelery
         "Thu, 08 Nov 2018 12:14:44 GMT"
         """
-        response = self._get_request_factory('healthcelery')
+        name = 'healthcelery'
+        response = self._get_request_factory(name)
         status_code = getattr(response, 'status_code')
-        self._write_metric(
-            http_status_code=status_code,
-            name='healthcelery',
-        )
+        self._write_metric(http_status_code=status_code, name=name)
         click.echo('Response: {}'.format(status_code))
         return response
 
@@ -80,14 +76,12 @@ class Monitor(object):
         }
         """
         pid_value = 20
-        response = self._get_request_factory('api/literature/{}'.format(pid_value))
+        name = 'api/literature/{}'.format(pid_value)
+        response = self._get_request_factory(name)
         assert response.json()['metadata']['control_number'] == pid_value
 
         status_code = getattr(response, 'status_code')
-        self._write_metric(
-            http_status_code=status_code,
-            name='healthcelery',
-        )
+        self._write_metric(http_status_code=status_code, name=name)
         click.echo('Response: {}'.format(status_code))
         return response
 
