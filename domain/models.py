@@ -1,3 +1,4 @@
+import datetime
 import socket
 import traceback
 
@@ -29,29 +30,56 @@ class Monitor(object):
             traceback.print_exc()
         return response
 
+    def _perform_monitor_for_endpoint(self, name, assertion_func=None):
+        response = self._get_request_factory(name)
+
+        try:
+            content = response.json()
+            if assertion_func:
+                assertion_func(content)
+        except ValueError:
+            click.echo('No JSON response: {}'.format(response.content))
+            return
+        except Exception:
+            click.echo(traceback.format_exc())
+            return
+
+        status_code = getattr(response, 'status_code')
+        if status_code:
+            self._write_metric(http_status_code=status_code, name=name)
+            click.echo('Response: {}'.format(status_code))
+        return response
+
+    def _write_metric(self, name='default', **kwargs):
+        data = dict(
+            hostname=SHORT_HOSTNAME,
+            origin='inspire-websearch-monitoring',
+            name=name,
+        )
+        data.update(kwargs)
+        write_metric(**data)
+
     def get_health(self):
         """
         $ curl https://labs.inspirehep.net/health
         "Thu, 08 Nov 2018 12:14:19 GMT"
         """
-        name = 'health'
-        response = self._get_request_factory(name)
-        status_code = getattr(response, 'status_code')
-        self._write_metric(http_status_code=status_code, name=name)
-        click.echo('Response: {}'.format(status_code))
-        return response
+        def assertion(content):
+            year = datetime.datetime.today().year
+            assert str(year) in content, content
+
+        self._perform_monitor_for_endpoint('health', assertion)
 
     def get_health_celery(self):
         """
         $ curl https://labs.inspirehep.net/healthcelery
         "Thu, 08 Nov 2018 12:14:44 GMT"
         """
-        name = 'healthcelery'
-        response = self._get_request_factory(name)
-        status_code = getattr(response, 'status_code')
-        self._write_metric(http_status_code=status_code, name=name)
-        click.echo('Response: {}'.format(status_code))
-        return response
+        def assertion(content):
+            year = datetime.datetime.today().year
+            assert str(year) in content, content
+
+        self._perform_monitor_for_endpoint('healthcelery', assertion)
 
     def get_search(self):
         """
@@ -77,19 +105,8 @@ class Monitor(object):
         """
         pid_value = 20
         name = 'api/literature/{}'.format(pid_value)
-        response = self._get_request_factory(name)
-        assert response.json()['metadata']['control_number'] == pid_value
 
-        status_code = getattr(response, 'status_code')
-        self._write_metric(http_status_code=status_code, name=name)
-        click.echo('Response: {}'.format(status_code))
-        return response
+        def assertion(content):
+            assert content['metadata']['control_number'] == pid_value, content
 
-    def _write_metric(self, name='default', **kwargs):
-        data = dict(
-            hostname=SHORT_HOSTNAME,
-            origin='inspire-websearch-monitoring',
-            name=name,
-        )
-        data.update(kwargs)
-        write_metric(**data)
+        self._perform_monitor_for_endpoint(name, assertion)
